@@ -3,9 +3,12 @@
   "version": "0.0.0",
   "description": "Composable React UI for tools and connectors.",
   "type": "module",
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "files": [
-    "dist"
+    "dist",
+    "public"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -15,7 +18,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
-    }
+    },
+    "./styles.css": "./dist/index.css"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean",
@@ -26,7 +30,9 @@
   },
   "devDependencies": {
     "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.2.3",
     "react": "^19.1.0",
+    "react-dom": "^19.2.8",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
   }
