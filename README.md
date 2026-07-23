@@ -2,6 +2,12 @@
 
 Typed, vendor-neutral React cards for tools and connectors.
 
+## Install
+
+```sh
+npm install ai-tool-elements
+```
+
 ```tsx
 import {
   Exa,

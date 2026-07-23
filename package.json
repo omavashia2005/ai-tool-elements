@@ -1,7 +1,24 @@
 {
   "name": "ai-tool-elements",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Composable React UI for tools and connectors.",
+  "keywords": [
+    "ai",
+    "connectors",
+    "react",
+    "shadcn",
+    "tools",
+    "ui"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omavashia2005/ai-tool-elements.git"
+  },
+  "bugs": {
+    "url": "https://github.com/omavashia2005/ai-tool-elements/issues"
+  },
+  "homepage": "https://github.com/omavashia2005/ai-tool-elements#readme",
   "type": "module",
   "sideEffects": [
     "**/*.css"
@@ -26,6 +43,7 @@
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts --clean && tailwindcss -i src/styles.css -o dist/index.css --minify",
     "test": "npm run build && node --test",
+    "prepublishOnly": "npm test",
     "doctor": "npx react-doctor@latest",
     "example": "npm run build && npm run dev --workspace ai-tool-elements-example",
     "example:build": "npm run build && npm run build --workspace ai-tool-elements-example",
@@ -33,6 +51,9 @@
   },
   "peerDependencies": {
     "react": ">=18"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
