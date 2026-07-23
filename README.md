@@ -30,3 +30,14 @@ imported directly (`Slack`, `Gmail`, `Notion`, `Exa`, and the rest).
 
 Copy `node_modules/ai-tool-elements/public/artifacts` into your app's `public`
 directory to use the complete catalog's local logos.
+
+## Editable example
+
+Run the Next.js showcase:
+
+```sh
+npm run example
+```
+
+Then edit `examples/basic/app/page.tsx`. Create a static production build with
+`npm run example:build`.
