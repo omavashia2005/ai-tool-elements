@@ -22,18 +22,29 @@
     "./styles.css": "./dist/index.css"
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm,cjs --dts --clean",
-    "test": "npm run build && node --test"
+    "build": "tsup src/index.ts --format esm,cjs --dts --clean && tailwindcss -i src/styles.css -o dist/index.css --minify",
+    "test": "npm run build && node --test",
+    "doctor": "npx react-doctor@latest",
+    "sync:catalog": "tsx scripts/sync-tool-catalog.ts"
   },
   "peerDependencies": {
     "react": ">=18"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.2.3",
+    "cheerio": "^1.0.0",
     "react": "^19.1.0",
+    "react-doctor": "^0.9.1",
     "react-dom": "^19.2.8",
+    "tailwindcss": "^4.3.3",
     "tsup": "^8.5.0",
+    "tsx": "^4.23.1",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.6.0"
   }
 }
