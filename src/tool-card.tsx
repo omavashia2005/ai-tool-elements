@@ -1,91 +1,75 @@
-import type { ComponentPropsWithoutRef, ElementType, ReactNode } from "react";
+import type { ComponentProps, JSX, ReactNode } from "react";
 
-export type ToolField = {
-  name: string;
-  label?: string;
-  description?: string;
-  required?: boolean;
-};
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import type { Tool } from "@/types";
 
-export type Tool = {
-  id: string;
-  name: string;
-  description?: string;
-  image?: string;
-  fields?: readonly ToolField[];
-};
-
-type ToolCardOwnProps<T extends Tool> = {
+export type ToolCardProps<T extends Tool = Tool> = Omit<
+  ComponentProps<typeof Card>,
+  "children"
+> & {
   tool: T;
-  as?: ElementType;
-  className?: string;
   actions?: ReactNode;
   footer?: ReactNode;
 };
 
-export type ToolCardProps<
-  T extends Tool = Tool,
-  C extends ElementType = "article",
-> = ToolCardOwnProps<T> &
-  Omit<ComponentPropsWithoutRef<C>, keyof ToolCardOwnProps<T> | "children"> & {
-    as?: C;
-  };
-
-export function ToolCard<T extends Tool, C extends ElementType = "article">({
+export function ToolCard<T extends Tool = Tool>({
   tool,
-  as,
-  className,
   actions,
   footer,
   ...props
-}: ToolCardProps<T, C>) {
-  const Component: ElementType = as ?? "article";
-
+}: ToolCardProps<T>): JSX.Element {
   return (
-    <Component
-      className={["ai-tool-card", className].filter(Boolean).join(" ")}
-      {...props}
-    >
-      <div className="ai-tool-card__header">
+    <Card {...props}>
+      <CardHeader className="flex flex-row items-start gap-3">
         {tool.image ? (
           <img
-            className="ai-tool-card__logo"
+            className="size-10 rounded-md object-contain"
             src={tool.image}
             alt=""
             loading="lazy"
             decoding="async"
           />
-        ) : (
-          <span className="ai-tool-card__logo ai-tool-card__logo--fallback" aria-hidden="true">
-            {tool.name.trim().charAt(0).toUpperCase() || "?"}
-          </span>
-        )}
+        ) : null}
 
-        <div className="ai-tool-card__copy">
-          <h3 className="ai-tool-card__title">{tool.name}</h3>
-          {tool.description && <p className="ai-tool-card__description">{tool.description}</p>}
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          <CardTitle>{tool.name}</CardTitle>
+          {tool.description ? (
+            <CardDescription>{tool.description}</CardDescription>
+          ) : null}
         </div>
 
-        {actions && <div className="ai-tool-card__actions">{actions}</div>}
-      </div>
+        {actions ? <CardAction>{actions}</CardAction> : null}
+      </CardHeader>
 
       {tool.fields?.length ? (
-        <ul className="ai-tool-card__fields" aria-label={`${tool.name} fields`}>
-          {tool.fields.map((field) => (
-            <li className="ai-tool-card__field" key={field.name}>
-              <span>
-                <strong>{field.label ?? field.name}</strong>
-                {field.description && <small>{field.description}</small>}
-              </span>
-              <span className="ai-tool-card__requirement">
-                {field.required ? "Required" : "Optional"}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <CardContent>
+          <ul className="flex flex-col gap-3" aria-label={`${tool.name} fields`}>
+            {tool.fields.map((field) => (
+              <li className="flex items-start justify-between gap-4" key={field.name}>
+                <span className="flex flex-col gap-1">
+                  <strong>{field.label ?? field.name}</strong>
+                  {field.description ? (
+                    <small className="text-muted-foreground">{field.description}</small>
+                  ) : null}
+                </span>
+                <small className="text-muted-foreground">
+                  {field.required ? "Required" : "Optional"}
+                </small>
+              </li>
+            ))}
+          </ul>
+        </CardContent>
       ) : null}
 
-      {footer && <div className="ai-tool-card__footer">{footer}</div>}
-    </Component>
+      {footer ? <CardFooter className="border-t">{footer}</CardFooter> : null}
+    </Card>
   );
 }

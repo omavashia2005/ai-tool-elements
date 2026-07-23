@@ -1,4 +1,3 @@
-import "./styles.css";
-
-export { ToolCard, type Tool, type ToolCardProps, type ToolField } from "./tool-card";
-export { toolCatalog, type ToolCatalogItem } from "./tool-catalog";
+export { ToolCard, type ToolCardProps } from "./tool-card";
+export * from "./tool-catalog";
+export type { Tool, ToolCatalogItem, ToolField } from "./types";

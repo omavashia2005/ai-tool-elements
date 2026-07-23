@@ -3,20 +3,30 @@
 Typed, vendor-neutral React cards for tools and connectors.
 
 ```tsx
-import { ToolCard, toolCatalog } from "ai-tool-elements";
+import {
+  Exa,
+  Gmail,
+  Notion,
+  Slack,
+  ToolCard,
+  toolCatalog,
+} from "ai-tool-elements";
 import "ai-tool-elements/styles.css";
-import { Card } from "@/components/ui/card";
 
 export function Tools() {
   return toolCatalog.map((tool) => (
-    <ToolCard key={tool.id} tool={tool} as={Card} />
+    <ToolCard key={tool.id} tool={tool} />
   ));
 }
 ```
 
-`ToolCard` accepts any component that supports `className` and `children`, so
-shadcn cards work without an adapter. Custom tools only need an `id` and `name`;
-`description`, `image`, and generic required/optional `fields` are optional.
+`ToolCard` composes shadcn's `Card`, `CardHeader`, `CardTitle`,
+`CardDescription`, `CardContent`, `CardAction`, and `CardFooter`. Custom tools
+only need an `id` and `name`; `description`, `image`, and typed
+required/optional `fields` are optional.
+
+Every catalog item is also a typed named export, so individual tools can be
+imported directly (`Slack`, `Gmail`, `Notion`, `Exa`, and the rest).
 
 Copy `node_modules/ai-tool-elements/public/artifacts` into your app's `public`
-directory to use the starter catalog's local SVG logos.
+directory to use the complete catalog's local logos.
