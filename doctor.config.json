@@ -1,0 +1,6 @@
+{
+  "$schema": "https://react.doctor/schemas/doctor-config.json",
+  "rules": {
+    "react-doctor/nextjs-no-img-element": "off"
+  }
+}
