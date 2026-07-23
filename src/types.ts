@@ -5,11 +5,15 @@ export type ToolField = Readonly<{
   required?: boolean;
 }>;
 
+export type ToolImage =
+  | Readonly<{ type: "svg"; content: string }>
+  | Readonly<{ type: "url"; src: string }>;
+
 export type Tool = Readonly<{
   id: string;
   name: string;
   description?: string;
-  image?: string;
+  image?: ToolImage;
   fields?: readonly ToolField[];
 }>;
 

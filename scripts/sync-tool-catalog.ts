@@ -7,7 +7,6 @@ import type { IconModule } from "@thesvg/icons";
 const DOCS_URL = "https://docs.composio.dev/toolkits";
 const PARSE_URL =
   "https://api.parse.bot/scraper/8e464fbd-d473-428f-996d-174a82b024a8/list_toolkits";
-const ICON_URL = "https://thesvg.org/icons";
 const CATALOG_FILE = "src/tool-catalog.ts";
 const CATALOG_LIMIT = 200;
 const FEATURED_TOOLKIT_COUNT = 9;
@@ -88,7 +87,7 @@ type SourceToolkit = Readonly<{
 type CatalogToolkit = Readonly<{
   id: string;
   name: string;
-  image?: string;
+  iconSlug?: string;
 }>;
 
 type IconIndex = ReadonlyMap<string, ReadonlySet<IconModule>>;
@@ -400,9 +399,7 @@ async function createCatalog(toolkits: readonly SourceToolkit[]): Promise<{
     catalog.push({
       id: toolkit.id,
       name: toolkit.name,
-      ...(match.icon
-        ? { image: `${ICON_URL}/${match.icon.slug}/default.svg` }
-        : {}),
+      ...(match.icon ? { iconSlug: match.icon.slug } : {}),
     });
   }
 
@@ -431,15 +428,31 @@ function formatCatalog(toolkits: readonly CatalogToolkit[]): string {
 
   const declarations = exports
     .map(
-      ({ exportName, toolkit }) =>
-        `export const ${exportName}: ToolCatalogItem = ${JSON.stringify(toolkit)};`,
+      ({ exportName, toolkit }) => {
+        const image = toolkit.iconSlug
+          ? `,"image":{"type":"svg","content":_icon${exportName}}`
+          : "";
+
+        return `export const ${exportName}: ToolCatalogItem = {"id":${JSON.stringify(toolkit.id)},"name":${JSON.stringify(toolkit.name)}${image}};`;
+      },
     )
     .join("\n");
   const catalogItems = exports
     .map(({ exportName }) => `  ${exportName},`)
     .join("\n");
+  const iconImports = exports
+    .flatMap(({ exportName, toolkit }) =>
+      toolkit.iconSlug
+        ? [
+            `import { svg as _icon${exportName} } from "@thesvg/icons/${toolkit.iconSlug}";`,
+          ]
+        : [],
+    )
+    .join("\n");
 
-  return `import type { ToolCatalogItem } from "./types";
+  return `${iconImports}
+
+import type { ToolCatalogItem } from "./types";
 
 // Add a tool by exporting one ToolCatalogItem here, then register it below.
 ${declarations}

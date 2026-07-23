@@ -17,32 +17,30 @@ test("renders a logo and generic required fields", () => {
       tool: {
         id: "weather",
         name: "Weather",
-        image: "https://thesvg.org/icons/weather/default.svg",
+        image: {
+          type: "url",
+          src: "https://example.com/weather.svg",
+        },
         fields: [{ name: "apiKey", label: "API key", required: true }],
       },
     }),
   );
 
-  assert.equal(
-    html.includes("https://thesvg.org/icons/weather/default.svg"),
-    true,
-  );
+  assert.equal(html.includes("https://example.com/weather.svg"), true);
   assert.match(html, /data-slot="card"/);
   assert.match(html, /API key/);
   assert.match(html, /Required/);
 });
 
-test("ships 200 unique tools with CDN-backed images when available", () => {
+test("ships 200 unique tools with imported SVG images when available", () => {
   assert.equal(toolCatalog.length, 200);
   assert.equal(new Set(toolCatalog.map(({ id }) => id)).size, toolCatalog.length);
 
   for (const { image } of toolCatalog) {
     if (!image) continue;
 
-    const url = new URL(image);
-    assert.equal(url.origin, "https://thesvg.org");
-    assert.equal(url.pathname.startsWith("/icons/"), true);
-    assert.equal(url.pathname.endsWith("/default.svg"), true);
+    assert.equal(image.type, "svg");
+    assert.equal(image.content.includes("<svg"), true);
   }
 });
 
@@ -53,7 +51,10 @@ test("exports common tools as typed named imports", () => {
   );
 
   for (const tool of [Slack, Gmail, Notion, Exa]) {
-    assert.equal(typeof tool.image, "string");
-    assert.equal(tool.image.startsWith("https://thesvg.org/icons/"), true);
+    assert.equal(tool.image?.type, "svg");
+    assert.equal(tool.image.content.includes("<svg"), true);
   }
+
+  const html = renderToStaticMarkup(createElement(ToolCard, { tool: Slack }));
+  assert.equal(html.includes("data:image/svg+xml"), true);
 });

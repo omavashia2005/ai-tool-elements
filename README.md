@@ -32,8 +32,11 @@ The v0 catalog is limited to 200 useful integrations. It keeps the source
 directory's featured tools first, then ranks the remainder by available
 actions and triggers; it does not depend on a connector vendor at runtime.
 
-Available logos load on demand from [theSVG](https://thesvg.org). A tool can
-omit `image` when no suitable logo exists.
+Available logos use tree-shakeable imports from
+[`@thesvg/icons`](https://www.npmjs.com/package/@thesvg/icons). Importing a
+named tool includes its matched icon; importing `toolCatalog` includes the
+matched icons for the whole catalog. A tool can omit `image` when no suitable
+logo exists.
 
 The cards and their field definitions are backend-agnostic: they do not
 require Composio or any other connector service. Product names and logos are
@@ -45,10 +48,12 @@ Add a typed named constant to `src/tool-catalog.ts`, then include it in
 `toolCatalog`:
 
 ```ts
+import { svg as exampleIcon } from "@thesvg/icons/example";
+
 export const Example: ToolCatalogItem = {
   id: "example",
   name: "Example",
-  image: "https://thesvg.org/icons/example/default.svg",
+  image: { type: "svg", content: exampleIcon },
 };
 
 export const toolCatalog: readonly ToolCatalogItem[] = [
@@ -57,8 +62,9 @@ export const toolCatalog: readonly ToolCatalogItem[] = [
 ];
 ```
 
-`image` is optional. When theSVG has a matching brand, use its exact icon slug
-in `https://thesvg.org/icons/{slug}/default.svg`; otherwise leave `image` out.
+`image` is optional. Import the exact theSVG icon subpath when it has a matching
+brand; otherwise leave `image` out. URL images use
+`{ type: "url", src: "https://example.com/logo.svg" }`.
 
 ## Editable example
 

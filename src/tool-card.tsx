@@ -11,6 +11,10 @@ import {
 } from "@/components/ui/card";
 import type { Tool } from "@/types";
 
+function svgToDataUrl(svg: string): string {
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+}
+
 export type ToolCardProps<T extends Tool = Tool> = Omit<
   ComponentProps<typeof Card>,
   "children"
@@ -32,7 +36,11 @@ export function ToolCard<T extends Tool = Tool>({
         {tool.image ? (
           <img
             className="size-10 rounded-md object-contain"
-            src={tool.image}
+            src={
+              tool.image.type === "svg"
+                ? svgToDataUrl(tool.image.content)
+                : tool.image.src
+            }
             alt=""
             loading="lazy"
             decoding="async"
