@@ -28,8 +28,37 @@ required/optional `fields` are optional.
 Every catalog item is also a typed named export, so individual tools can be
 imported directly (`Slack`, `Gmail`, `Notion`, `Exa`, and the rest).
 
-Copy `node_modules/ai-tool-elements/public/artifacts` into your app's `public`
-directory to use the complete catalog's local logos.
+The v0 catalog is limited to 200 useful integrations. It keeps the source
+directory's featured tools first, then ranks the remainder by available
+actions and triggers; it does not depend on a connector vendor at runtime.
+
+Available logos load on demand from [theSVG](https://thesvg.org). A tool can
+omit `image` when no suitable logo exists.
+
+The cards and their field definitions are backend-agnostic: they do not
+require Composio or any other connector service. Product names and logos are
+trademarks of their respective owners.
+
+## Add a tool
+
+Add a typed named constant to `src/tool-catalog.ts`, then include it in
+`toolCatalog`:
+
+```ts
+export const Example: ToolCatalogItem = {
+  id: "example",
+  name: "Example",
+  image: "https://thesvg.org/icons/example/default.svg",
+};
+
+export const toolCatalog: readonly ToolCatalogItem[] = [
+  // existing tools
+  Example,
+];
+```
+
+`image` is optional. When theSVG has a matching brand, use its exact icon slug
+in `https://thesvg.org/icons/{slug}/default.svg`; otherwise leave `image` out.
 
 ## Editable example
 
