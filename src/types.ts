@@ -13,4 +13,4 @@ export type Tool = Readonly<{
   fields?: readonly ToolField[];
 }>;
 
-export type ToolCatalogItem = Tool & Readonly<{ image: string }>;
+export type ToolCatalogItem = Tool;

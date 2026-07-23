@@ -1,24 +1,19 @@
-import { mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { readFile, writeFile } from "node:fs/promises";
+import { createRequire } from "node:module";
 
 import { load } from "cheerio";
+import type { IconModule } from "@thesvg/icons";
 
 const DOCS_URL = "https://docs.composio.dev/toolkits";
 const PARSE_URL =
   "https://api.parse.bot/scraper/8e464fbd-d473-428f-996d-174a82b024a8/list_toolkits";
-const ARTIFACT_URL = "/artifacts/tool-logos";
-const ARTIFACT_DIR = "public/artifacts/tool-logos";
+const ICON_URL = "https://thesvg.org/icons";
 const CATALOG_FILE = "src/tool-catalog.ts";
-const MINIMUM_TOOLKIT_COUNT = 1_403;
-const DOWNLOAD_WORKERS = 16;
-const IMAGE_EXTENSIONS: Readonly<Record<string, string>> = {
-  "image/gif": "gif",
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/svg+xml": "svg",
-  "image/vnd.microsoft.icon": "ico",
-  "image/webp": "webp",
-  "image/x-icon": "ico",
+const CATALOG_LIMIT = 200;
+const FEATURED_TOOLKIT_COUNT = 9;
+const REQUIRED_TOOLKITS = new Set(["exa", "linear", "stripe", "vercel"]);
+const ICON_OVERRIDES: Readonly<Record<string, string>> = {
+  help_scout: "help-scout",
 };
 const RESERVED_EXPORTS = new Set([
   "Await",
@@ -86,7 +81,8 @@ type ParseToolkitPage = Readonly<{
 type SourceToolkit = Readonly<{
   id: string;
   name: string;
-  logoUrl?: string;
+  actionsCount: number;
+  triggersCount: number;
 }>;
 
 type CatalogToolkit = Readonly<{
@@ -95,9 +91,11 @@ type CatalogToolkit = Readonly<{
   image?: string;
 }>;
 
-type DownloadedImage = Readonly<{
-  bytes: Buffer;
-  extension: string;
+type IconIndex = ReadonlyMap<string, ReadonlySet<IconModule>>;
+
+type IconMatch = Readonly<{
+  icon?: IconModule;
+  ambiguous: boolean;
 }>;
 
 function isToolkitSummary(value: unknown): value is ToolkitSummary {
@@ -150,10 +148,14 @@ function toExportName(value: string): string {
   return exportName;
 }
 
-function assertSafeId(id: string): void {
-  if (!id || basename(id) !== id || id === "." || id === "..") {
-    throw new Error(`Unsafe toolkit id: ${JSON.stringify(id)}`);
+function normalizeName(value: string): string {
+  let normalized = "";
+
+  for (const character of value.toLowerCase()) {
+    if (isAsciiLetterOrDigit(character)) normalized += character;
   }
+
+  return normalized;
 }
 
 async function fetchText(url: string, headers?: HeadersInit): Promise<string> {
@@ -165,7 +167,7 @@ async function fetchText(url: string, headers?: HeadersInit): Promise<string> {
 }
 
 async function fetchFromParse(apiKey: string): Promise<SourceToolkit[]> {
-  const toolkits: ToolkitSummary[] = [];
+  const toolkits: SourceToolkit[] = [];
   const limit = 200;
   let page = 1;
   let totalPages = 1;
@@ -195,23 +197,30 @@ async function fetchFromParse(apiKey: string): Promise<SourceToolkit[]> {
       throw new Error("Parse returned an invalid toolkit page");
     }
 
-    toolkits.push(...data.toolkits);
+    toolkits.push(
+      ...data.toolkits.map(
+        ({ slug, name, actions_count, triggers_count }) => ({
+          id: slug,
+          name,
+          actionsCount: actions_count,
+          triggersCount: triggers_count,
+        }),
+      ),
+    );
     totalPages = data.total_pages;
     page += 1;
   } while (page <= totalPages);
 
-  return toolkits.map(({ slug, name, logo_url }) => ({
-    id: slug,
-    name,
-    logoUrl: logo_url || undefined,
-  }));
+  return toolkits;
 }
 
 function parseDocsHtml(html: string): SourceToolkit[] {
   const $ = load(html);
   const toolkits = new Map<string, SourceToolkit>();
 
-  $('a[href^="https://docs.composio.dev/toolkits/"]').each((_, element) => {
+  $(
+    'a[href^="/toolkits/"], a[href^="https://docs.composio.dev/toolkits/"]',
+  ).each((_, element) => {
     const anchor = $(element);
     const keyButton = anchor.find('button[aria-label^="Copy "]').first();
     if (!keyButton.length) return;
@@ -224,13 +233,19 @@ function parseDocsHtml(html: string): SourceToolkit[] {
       .trim();
     if (!href || !name) return;
 
-    const id = new URL(href).pathname.split("/").filter(Boolean).at(-1);
+    const id = new URL(href, DOCS_URL).pathname.split("/").filter(Boolean).at(-1);
     if (!id) return;
+
+    const counts = anchor
+      .find("div.flex.items-center.gap-3.pl-12 > span")
+      .map((_, span) => Number($(span).text().trim()))
+      .get();
 
     toolkits.set(id, {
       id,
       name,
-      logoUrl: anchor.find("img").first().attr("src"),
+      actionsCount: counts[0] ?? 0,
+      triggersCount: counts[1] ?? 0,
     });
   });
 
@@ -246,70 +261,152 @@ async function getSourceToolkits(): Promise<SourceToolkit[]> {
   if (apiKey) return fetchFromParse(apiKey);
 
   const htmlFile = process.env.TOOLKIT_HTML_FILE;
-  return htmlFile
+  const toolkits = htmlFile
     ? parseDocsHtml(await readFile(htmlFile, "utf8"))
     : fetchFromDocs();
+
+  return toolkits;
 }
 
-async function localizeLogo(toolkit: SourceToolkit): Promise<CatalogToolkit> {
-  assertSafeId(toolkit.id);
-  if (!toolkit.logoUrl) return { id: toolkit.id, name: toolkit.name };
+function rankToolkits(toolkits: readonly SourceToolkit[]): SourceToolkit[] {
+  const selected = new Map<string, SourceToolkit>();
 
-  const fallbackUrl = `https://logos.composio.dev/api/${encodeURIComponent(toolkit.id)}`;
-  const urls = new Set([toolkit.logoUrl, fallbackUrl]);
-
-  for (const url of urls) {
-    const image = await downloadImage(url);
-    if (!image) continue;
-
-    const filename = `${toolkit.id}.${image.extension}`;
-    await writeFile(join(ARTIFACT_DIR, filename), image.bytes);
-
-    return {
-      id: toolkit.id,
-      name: toolkit.name,
-      image: `${ARTIFACT_URL}/${filename}`,
-    };
+  for (const toolkit of toolkits.slice(0, FEATURED_TOOLKIT_COUNT)) {
+    selected.set(toolkit.id, toolkit);
   }
 
-  return { id: toolkit.id, name: toolkit.name };
+  for (const toolkit of toolkits) {
+    if (REQUIRED_TOOLKITS.has(toolkit.id)) selected.set(toolkit.id, toolkit);
+  }
+
+  const remaining = toolkits
+    .filter(({ id }) => !selected.has(id))
+    .sort((left, right) => {
+      const scoreDifference =
+        right.actionsCount +
+        right.triggersCount -
+        (left.actionsCount + left.triggersCount);
+
+      return scoreDifference || left.name.localeCompare(right.name);
+    });
+
+  for (const toolkit of remaining) {
+    if (selected.size === CATALOG_LIMIT) break;
+    selected.set(toolkit.id, toolkit);
+  }
+
+  return [...selected.values()];
 }
 
-async function downloadImage(url: string): Promise<DownloadedImage | undefined> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) return undefined;
+function isIconModule(value: unknown): value is IconModule {
+  if (!value || typeof value !== "object") return false;
+  const icon = value as Partial<IconModule>;
 
-    const mediaType = response.headers.get("content-type")?.split(";")[0];
-    const extension = mediaType ? IMAGE_EXTENSIONS[mediaType] : undefined;
-    if (!extension) return undefined;
+  return (
+    typeof icon.slug === "string" &&
+    typeof icon.title === "string" &&
+    Array.isArray(icon.aliases) &&
+    icon.aliases.every((alias) => typeof alias === "string")
+  );
+}
 
-    const bytes = Buffer.from(await response.arrayBuffer());
-    if (!bytes.length) return undefined;
+function addToIndex(
+  index: Map<string, Set<IconModule>>,
+  key: string,
+  icon: IconModule,
+): void {
+  if (!key) return;
 
-    return {
-      bytes,
-      extension,
-    };
-  } catch {
-    return undefined;
+  const matches = index.get(key);
+  if (matches) {
+    matches.add(icon);
+  } else {
+    index.set(key, new Set([icon]));
   }
 }
 
-async function localizeLogos(toolkits: readonly SourceToolkit[]): Promise<CatalogToolkit[]> {
-  const queue = [...toolkits];
-  const catalog: CatalogToolkit[] = [];
+function buildIconIndexes(icons: readonly IconModule[]): {
+  bySlug: ReadonlyMap<string, IconModule>;
+  exact: IconIndex;
+  normalized: IconIndex;
+} {
+  const bySlug = new Map<string, IconModule>();
+  const exact = new Map<string, Set<IconModule>>();
+  const normalized = new Map<string, Set<IconModule>>();
 
-  async function worker(): Promise<void> {
-    for (;;) {
-      const toolkit = queue.shift();
-      if (!toolkit) return;
-      catalog.push(await localizeLogo(toolkit));
+  for (const icon of icons) {
+    bySlug.set(icon.slug, icon);
+    for (const name of [icon.slug, icon.title, ...icon.aliases]) {
+      addToIndex(exact, name.toLowerCase(), icon);
+      addToIndex(normalized, normalizeName(name), icon);
     }
   }
 
-  await Promise.all(Array.from({ length: DOWNLOAD_WORKERS }, () => worker()));
-  return catalog.sort((left, right) => left.name.localeCompare(right.name));
+  return { bySlug, exact, normalized };
+}
+
+function findUniqueIcon(
+  toolkit: SourceToolkit,
+  index: IconIndex,
+  normalize: (value: string) => string,
+): IconMatch {
+  const matches = new Set<IconModule>();
+
+  for (const value of [toolkit.id, toolkit.name]) {
+    for (const icon of index.get(normalize(value)) ?? []) matches.add(icon);
+  }
+
+  return {
+    icon: matches.size === 1 ? [...matches][0] : undefined,
+    ambiguous: matches.size > 1,
+  };
+}
+
+function matchIcon(
+  toolkit: SourceToolkit,
+  bySlug: ReadonlyMap<string, IconModule>,
+  exact: IconIndex,
+  normalized: IconIndex,
+): IconMatch {
+  const slugMatch = bySlug.get(ICON_OVERRIDES[toolkit.id] ?? toolkit.id);
+  if (slugMatch) return { icon: slugMatch, ambiguous: false };
+
+  const exactMatch = findUniqueIcon(toolkit, exact, (value) =>
+    value.toLowerCase(),
+  );
+  if (exactMatch.icon || exactMatch.ambiguous) return exactMatch;
+
+  return findUniqueIcon(toolkit, normalized, normalizeName);
+}
+
+async function createCatalog(toolkits: readonly SourceToolkit[]): Promise<{
+  catalog: CatalogToolkit[];
+  matches: number;
+  ambiguities: number;
+}> {
+  const require = createRequire(import.meta.url);
+  const iconPackage = require("@thesvg/icons") as Record<string, unknown>;
+  const icons = Object.values(iconPackage).filter(isIconModule);
+  const { bySlug, exact, normalized } = buildIconIndexes(icons);
+  const catalog: CatalogToolkit[] = [];
+  let matches = 0;
+  let ambiguities = 0;
+
+  for (const toolkit of rankToolkits(toolkits)) {
+    const match = matchIcon(toolkit, bySlug, exact, normalized);
+    if (match.ambiguous) ambiguities += 1;
+    if (match.icon) matches += 1;
+
+    catalog.push({
+      id: toolkit.id,
+      name: toolkit.name,
+      ...(match.icon
+        ? { image: `${ICON_URL}/${match.icon.slug}/default.svg` }
+        : {}),
+    });
+  }
+
+  return { catalog, matches, ambiguities };
 }
 
 function formatCatalog(toolkits: readonly CatalogToolkit[]): string {
@@ -344,6 +441,7 @@ function formatCatalog(toolkits: readonly CatalogToolkit[]): string {
 
   return `import type { ToolCatalogItem } from "./types";
 
+// Add a tool by exporting one ToolCatalogItem here, then register it below.
 ${declarations}
 
 export const toolCatalog: readonly ToolCatalogItem[] = [
@@ -352,33 +450,20 @@ ${catalogItems}
 `;
 }
 
-async function removeStaleAssets(toolkits: readonly CatalogToolkit[]): Promise<void> {
-  const usedFiles = new Set(
-    toolkits.flatMap(({ image }) => (image ? [basename(image)] : [])),
-  );
-
-  await Promise.all(
-    (await readdir(ARTIFACT_DIR))
-      .filter((filename) => !usedFiles.has(filename))
-      .map((filename) => unlink(join(ARTIFACT_DIR, filename))),
-  );
-}
-
 async function main(): Promise<void> {
   const sourceToolkits = await getSourceToolkits();
-  if (sourceToolkits.length < MINIMUM_TOOLKIT_COUNT) {
+  if (sourceToolkits.length < CATALOG_LIMIT) {
     throw new Error(
-      `Expected at least ${MINIMUM_TOOLKIT_COUNT} toolkits, received ${sourceToolkits.length}`,
+      `Expected at least ${CATALOG_LIMIT} toolkits, received ${sourceToolkits.length}`,
     );
   }
 
-  await mkdir(ARTIFACT_DIR, { recursive: true });
-  const catalog = await localizeLogos(sourceToolkits);
-  await removeStaleAssets(catalog);
+  const { catalog, matches, ambiguities } = await createCatalog(sourceToolkits);
   await writeFile(CATALOG_FILE, formatCatalog(catalog));
 
-  const logoCount = catalog.filter(({ image }) => image).length;
-  console.log(`Synced ${catalog.length} toolkits with ${logoCount} local logos.`);
+  console.log(
+    `Synced ${catalog.length} toolkits with ${matches} icon matches and ${ambiguities} ambiguities.`,
+  );
 }
 
 await main();

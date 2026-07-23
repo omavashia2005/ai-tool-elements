@@ -4,5 +4,4 @@ node_modules
 **/skills/react-doctor/
 **/.next/
 **/out/
-examples/basic/public/artifacts/
 examples/basic/next-env.d.ts

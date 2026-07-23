@@ -7,8 +7,7 @@
     "**/*.css"
   ],
   "files": [
-    "dist",
-    "public"
+    "dist"
   ],
   "workspaces": [
     "examples/basic"
@@ -28,15 +27,15 @@
     "build": "tsup src/index.ts --format esm,cjs --dts --clean && tailwindcss -i src/styles.css -o dist/index.css --minify",
     "test": "npm run build && node --test",
     "doctor": "npx react-doctor@latest",
-    "example": "npm run build && npm run example:assets && npm run dev --workspace ai-tool-elements-example",
-    "example:assets": "node --import tsx scripts/sync-example-assets.ts",
-    "example:build": "npm run build && npm run example:assets && npm run build --workspace ai-tool-elements-example",
-    "sync:catalog": "tsx scripts/sync-tool-catalog.ts"
+    "example": "npm run build && npm run dev --workspace ai-tool-elements-example",
+    "example:build": "npm run build && npm run build --workspace ai-tool-elements-example",
+    "sync:catalog": "node --import tsx scripts/sync-tool-catalog.ts"
   },
   "peerDependencies": {
     "react": ">=18"
   },
   "devDependencies": {
+    "@thesvg/icons": "^3.2.12",
     "@tailwindcss/cli": "^4.3.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.2.3",
