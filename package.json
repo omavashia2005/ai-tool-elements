@@ -10,6 +10,9 @@
     "dist",
     "public"
   ],
+  "workspaces": [
+    "examples/basic"
+  ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -25,6 +28,9 @@
     "build": "tsup src/index.ts --format esm,cjs --dts --clean && tailwindcss -i src/styles.css -o dist/index.css --minify",
     "test": "npm run build && node --test",
     "doctor": "npx react-doctor@latest",
+    "example": "npm run build && npm run example:assets && npm run dev --workspace ai-tool-elements-example",
+    "example:assets": "node --import tsx scripts/sync-example-assets.ts",
+    "example:build": "npm run build && npm run example:assets && npm run build --workspace ai-tool-elements-example",
     "sync:catalog": "tsx scripts/sync-tool-catalog.ts"
   },
   "peerDependencies": {
