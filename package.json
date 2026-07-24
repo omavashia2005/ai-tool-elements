@@ -1,6 +1,6 @@
 {
   "name": "ai-tool-elements",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Composable React UI for tools and connectors.",
   "keywords": [
     "ai",
