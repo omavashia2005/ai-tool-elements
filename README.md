@@ -1,5 +1,7 @@
 # ai-tool-elements
 
+[English](README.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 Typed, vendor-neutral React cards for tools and connectors.
 
 ## Install
