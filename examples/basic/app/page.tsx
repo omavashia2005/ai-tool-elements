@@ -26,8 +26,6 @@ function GithubIcon(): JSX.Element {
   );
 }
 
-const withIcons = toolCatalog.filter((tool) => tool.image);
-
 const IMPORT_SNIPPET = `import { Gmail, Notion, Stripe, ToolCard } from "ai-tool-elements";
 import "ai-tool-elements/styles.css";
 
@@ -48,15 +46,15 @@ const TYPE_SNIPPET = `type Tool = Readonly<{
 // your own tools type-check against the same shape
 const weather = { id: "weather", name: "Weather API" } satisfies Tool;`;
 
-const REGISTER_SNIPPET = `import { svg as acmeIcon } from "@thesvg/icons/acme";
+const CUSTOM_TOOL_SNIPPET = `import type { Tool } from "ai-tool-elements";
 
-export const Acme: ToolCatalogItem = {
+export const Acme = {
   id: "acme",
   name: "Acme",
-  image: { type: "svg", content: acmeIcon },
-};
+  description: "A project-defined connector.",
+  fields: [{ name: "apiKey", label: "API key", required: true }],
+} as const satisfies Tool;
 
-// add it to the toolCatalog array below, then anywhere:
 <ToolCard tool={Acme} />`;
 
 export default function Page(): JSX.Element {
@@ -64,7 +62,7 @@ export default function Page(): JSX.Element {
     <>
       <header className="topbar">
         <span className="wordmark">ai-tool-elements</span>
-        <nav className="nav-links">
+        <nav className="nav-links" aria-label="Primary">
           <a href={DOCS_URL}>Docs</a>
           <a href={DEEPWIKI_URL}>DeepWiki</a>
           <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
@@ -78,8 +76,8 @@ export default function Page(): JSX.Element {
           <h1>A React component library for every tool your agent calls.</h1>
           <p className="lede">
             A provider-independent React library for showing the tools and
-            connectors your product talks to — Stripe, Exa, Gmail, Notion, and
-            1,000+ more. No vendor SDK, no lock-in: just typed data in,
+            connectors your product talks to: Stripe, Exa, Gmail, Notion, and
+            1000+ more. No vendor SDK, no lock-in: just typed data in,
             shadcn/ui cards out.
           </p>
           <div className="install" aria-label="Install command">
@@ -117,7 +115,7 @@ export default function Page(): JSX.Element {
             <p>
               <code className="inline-code">ToolCard</code> takes a{" "}
               <code className="inline-code">Tool</code>. That&rsquo;s the whole
-              API — autocomplete and the compiler handle the rest.
+              API; autocomplete and the compiler handle the rest.
             </p>
           </div>
 
@@ -131,7 +129,7 @@ export default function Page(): JSX.Element {
             </div>
             <p>
               <code className="inline-code">ToolCard</code> is shadcn&rsquo;s{" "}
-              <code className="inline-code">Card</code> under the hood — so
+              <code className="inline-code">Card</code> under the hood, so
               buttons, badges, dialogs, and any other shadcn component you add
               slot straight into its actions and footer to build richer
               connector UIs.
@@ -142,28 +140,27 @@ export default function Page(): JSX.Element {
         <section aria-labelledby="contribute-heading">
           <div className="section-heading">
             <div>
-              <h2 id="contribute-heading">Adding a tool is one small diff</h2>
+              <h2 id="contribute-heading">Your own tools use the same type</h2>
             </div>
             <p>
-              1,000+ tools and counting — export a{" "}
-              <code className="inline-code">ToolCatalogItem</code>, register
-              it, and open a PR.
+              Define a <code className="inline-code">Tool</code> in your app
+              and render it with the same card.
             </p>
           </div>
 
-          <CodeBlock code={REGISTER_SNIPPET} filename="src/tool-catalog.ts" />
+          <CodeBlock code={CUSTOM_TOOL_SNIPPET} filename="tools.ts" />
         </section>
 
         <section aria-labelledby="catalog-heading">
           <div className="section-heading">
             <div>
               <h2 id="catalog-heading">
-                1,000+ tools, each one a named export
+                1000+ tools, each one a named export
               </h2>
             </div>
             <p>
-              Every tool with an official mark, rendered live by the library
-              itself — search all {withIcons.length}.
+              Search 1000+ tools; matched official marks render
+              automatically when available.
             </p>
           </div>
 
@@ -174,7 +171,7 @@ export default function Page(): JSX.Element {
       <footer className="footer">
         <code>{INSTALL_COMMAND}</code>
         <span>MIT licensed</span>
-        <nav className="nav-links">
+        <nav className="nav-links" aria-label="Footer">
           <a href={DOCS_URL}>Docs</a>
           <a href={DEEPWIKI_URL}>DeepWiki</a>
           <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
