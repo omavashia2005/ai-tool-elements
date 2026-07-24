@@ -7,6 +7,7 @@ import {
   Gmail,
   Notion,
   Slack,
+  ToolCallCard,
   ToolCard,
   toolCatalog,
 } from "../dist/index.js";
@@ -55,4 +56,35 @@ test("exports common tools as typed named imports", () => {
 
   const html = renderToStaticMarkup(createElement(ToolCard, { tool: Slack }));
   assert.equal(html.includes("data:image/svg+xml"), true);
+});
+
+test("renders every tool call state, including streaming and cancellation", () => {
+  const states = {
+    "input-streaming": "Pending",
+    "input-available": "Running",
+    "approval-requested": "Awaiting approval",
+    "approval-responded": "Responded",
+    "output-available": "Completed",
+    "output-error": "The tool call failed.",
+    "output-denied": "The tool call was denied.",
+    "output-cancelled": "The tool call was cancelled.",
+  };
+
+  for (const [state, text] of Object.entries(states)) {
+    const html = renderToStaticMarkup(
+      createElement(ToolCallCard, {
+        tool: { id: "weather", name: "Weather" },
+        state,
+        input: { city: "Phoenix" },
+        output: createElement("strong", null, "42°"),
+      }),
+    );
+
+    assert.equal(html.includes(`data-state="${state}"`), true);
+    assert.equal(html.includes("Phoenix"), true);
+    assert.equal(html.includes(text), true);
+    if (state === "output-available") {
+      assert.equal(html.includes("<strong>42°</strong>"), true);
+    }
+  }
 });
