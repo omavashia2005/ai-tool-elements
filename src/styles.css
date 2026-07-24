@@ -2,6 +2,7 @@
 @import "tailwindcss/utilities.css" layer(utilities);
 
 @source "./components/ui/card.tsx";
+@source "./tool-call-card.tsx";
 @source "./tool-card.tsx";
 
 @theme inline {

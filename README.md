@@ -34,7 +34,7 @@ required/optional `fields` are optional.
 Every catalog item is also a typed named export, so individual tools can be
 imported directly (`Slack`, `Gmail`, `Notion`, `Exa`, and the rest).
 
-The v0 catalog includes 1000 integrations with available logos.
+The v0 catalog includes 1000+ tools, with matched logos where available.
 
 Available logos use tree-shakeable imports from
 [`@thesvg/icons`](https://www.npmjs.com/package/@thesvg/icons). Importing a
@@ -46,29 +46,52 @@ The cards and their field definitions are backend-agnostic and require no
 connector service. Product names and logos are trademarks of their respective
 owners.
 
-## Add a tool
+## Custom tools
 
-Add a typed named constant to `src/tool-catalog.ts`, then include it in
-`toolCatalog`:
+Project-specific tools use the same public type without changing the package
+catalog:
 
 ```ts
-import { svg as exampleIcon } from "@thesvg/icons/example";
+import type { Tool } from "ai-tool-elements";
 
-export const Example: ToolCatalogItem = {
+export const Example = {
   id: "example",
   name: "Example",
-  image: { type: "svg", content: exampleIcon },
-};
-
-export const toolCatalog: readonly ToolCatalogItem[] = [
-  // existing tools
-  Example,
-];
+  image: { type: "url", src: "https://example.com/logo.svg" },
+} as const satisfies Tool;
 ```
 
-`image` is optional. Import the exact theSVG icon subpath when it has a matching
-brand; otherwise leave `image` out. URL images use
-`{ type: "url", src: "https://example.com/logo.svg" }`.
+`image` is optional.
+
+## Tool calls
+
+Pass the AI SDK state and input through while arguments stream or execution is
+pending. Render successful output as React content:
+
+```tsx
+import { ToolCallCard } from "ai-tool-elements";
+
+<ToolCallCard
+  tool={Weather}
+  state={part.state}
+  input={part.input}
+  output={
+    part.state === "output-available"
+      ? <WeatherResult result={part.output} />
+      : undefined
+  }
+  errorText={
+    part.state === "output-error" ? part.errorText : undefined
+  }
+  actions={approvalOrCancelButtons}
+/>
+```
+
+Supported states are `input-streaming`, `input-available`,
+`approval-requested`, `approval-responded`, `output-available`,
+`output-error`, `output-denied`, and `output-cancelled`. The last state is a
+library extension for calls cancelled before completion. Use `actions` for
+approval or cancellation controls.
 
 ## Editable example
 
@@ -84,5 +107,5 @@ Then edit `examples/basic/app/page.tsx`. Create a static production build with
 ## Roadmap
 
 - [ ] Add more ShadCN components
-- [ ] Unified UI for major tool API providers like Composio, ScaleKit, etc.
+- [ ] Unified UI for major tool API providers.
 - [ ] Agent skills

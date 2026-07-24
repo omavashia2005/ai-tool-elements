@@ -24,6 +24,43 @@ export type ToolCardProps<T extends Tool = Tool> = Omit<
   footer?: ReactNode;
 };
 
+type ToolCardHeaderProps<T extends Tool> = {
+  tool: T;
+  actions?: ReactNode;
+};
+
+export function ToolCardHeader<T extends Tool>({
+  tool,
+  actions,
+}: ToolCardHeaderProps<T>): JSX.Element {
+  return (
+    <CardHeader className="flex flex-row items-start gap-3">
+      {tool.image ? (
+        <img
+          className="size-10 rounded-md object-contain"
+          src={
+            tool.image.type === "svg"
+              ? svgToDataUrl(tool.image.content)
+              : tool.image.src
+          }
+          alt=""
+          loading="lazy"
+          decoding="async"
+        />
+      ) : null}
+
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <CardTitle>{tool.name}</CardTitle>
+        {tool.description ? (
+          <CardDescription>{tool.description}</CardDescription>
+        ) : null}
+      </div>
+
+      {actions ? <CardAction>{actions}</CardAction> : null}
+    </CardHeader>
+  );
+}
+
 export function ToolCard<T extends Tool = Tool>({
   tool,
   actions,
@@ -32,30 +69,7 @@ export function ToolCard<T extends Tool = Tool>({
 }: ToolCardProps<T>): JSX.Element {
   return (
     <Card {...props}>
-      <CardHeader className="flex flex-row items-start gap-3">
-        {tool.image ? (
-          <img
-            className="size-10 rounded-md object-contain"
-            src={
-              tool.image.type === "svg"
-                ? svgToDataUrl(tool.image.content)
-                : tool.image.src
-            }
-            alt=""
-            loading="lazy"
-            decoding="async"
-          />
-        ) : null}
-
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          <CardTitle>{tool.name}</CardTitle>
-          {tool.description ? (
-            <CardDescription>{tool.description}</CardDescription>
-          ) : null}
-        </div>
-
-        {actions ? <CardAction>{actions}</CardAction> : null}
-      </CardHeader>
+      <ToolCardHeader actions={actions} tool={tool} />
 
       {tool.fields?.length ? (
         <CardContent>

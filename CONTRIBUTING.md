@@ -5,7 +5,7 @@ Thanks for helping improve `ai-tool-elements`.
 ## Get started
 
 Follow [SETUP.md](./SETUP.md) to install dependencies, run the example, and
-learn how connectors and logos are registered.
+learn how to define application-specific connectors.
 
 Create a focused branch from `dev`, make the smallest change that solves the
 problem, and run:
@@ -31,11 +31,12 @@ npm run example
 
 ## Catalog changes
 
-See [Register a connector](./SETUP.md#register-a-connector) before editing
-`src/tool-catalog.ts`. Catalog entries must include an image.
+`src/tool-catalog.ts` is generated. Do not add entries by hand or use the icon
+library as a connector registry. The source catalog determines membership;
+matching icons are optional enrichment.
 
 Catalog-only changes should still pass `npm test`, which checks unique IDs,
-named exports, and SVG content.
+named exports, and matched SVG content.
 
 ## Pull requests
 
