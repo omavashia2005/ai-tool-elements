@@ -100,7 +100,6 @@ h1 {
   font-weight: 600;
   letter-spacing: -0.045em;
   line-height: 1.04;
-  max-width: 18ch;
 }
 
 h2 {
@@ -118,7 +117,6 @@ h2 {
   color: #aab4c0;
   font-size: 1.125rem;
   line-height: 1.65;
-  max-width: 44rem;
 }
 
 .install {
@@ -577,7 +575,6 @@ section {
   color: #8b95a2;
   font-size: 0.9375rem;
   line-height: 1.6;
-  max-width: 44rem;
 }
 
 .split {
