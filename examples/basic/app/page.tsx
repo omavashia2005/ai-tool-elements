@@ -5,8 +5,7 @@ import { CatalogSearch } from "./catalog-search";
 import { CodeBlock } from "./code-block";
 import { CopyButton } from "./copy-button";
 
-// TODO: point at the public repo URL once it goes public.
-const GITHUB_URL = "#";
+const GITHUB_URL = "https://github.com/omavashia2005/ai-tool-elements";
 
 const INSTALL_COMMAND = "npm install ai-tool-elements";
 
