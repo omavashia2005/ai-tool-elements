@@ -1,6 +1,11 @@
 dist
 node_modules
 .openai/
+.local/
+.agents/
+.claude/
+skills-lock.json
+*.tsbuildinfo
 **/skills/react-doctor/
 **/.next/
 **/out/
