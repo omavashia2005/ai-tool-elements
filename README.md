@@ -82,6 +82,7 @@ Then edit `examples/basic/app/page.tsx`. Create a static production build with
 `npm run example:build`.
 
 ## Roadmap
-[] Adding more ShadCN components 
-[] Unified UI for major tool API providers like Composio, ScaleKit, etc. 
-[] Agent skills
+
+- [ ] Add more ShadCN components
+- [ ] Unified UI for major tool API providers like Composio, ScaleKit, etc.
+- [ ] Agent skills
