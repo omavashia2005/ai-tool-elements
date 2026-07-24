@@ -33,11 +33,14 @@ test("renders a logo and generic required fields", () => {
   assert.match(html, /Required/);
 });
 
-test("ships 1000 unique tools with imported SVG images", () => {
-  assert.equal(toolCatalog.length, 1000);
+test("ships the complete source catalog independently of available logos", () => {
+  assert.equal(toolCatalog.length > 1000, true);
   assert.equal(new Set(toolCatalog.map(({ id }) => id)).size, toolCatalog.length);
 
-  for (const { image } of toolCatalog) {
+  const images = toolCatalog.flatMap(({ image }) => (image ? [image] : []));
+  assert.equal(images.length, 332);
+
+  for (const image of images) {
     assert.equal(image.type, "svg");
     assert.equal(image.content.includes("<svg"), true);
   }
