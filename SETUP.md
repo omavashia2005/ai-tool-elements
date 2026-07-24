@@ -121,32 +121,12 @@ the connector and use it as `content`, as in the application example. If a
 stable hosted asset is preferable, use `{ type: "url", src: "https://..." }`.
 Do not add a new icon dependency for one logo.
 
-The current catalog and test expect exactly 200 connectors. Replace an entry
-when preserving that limit, or deliberately update `CATALOG_LIMIT` and the
-catalog-size test when expanding it.
-
-### Refresh the generated catalog
-
-This is maintainer work and is not needed for a custom application connector:
-
-```sh
-npm run sync:catalog
-```
-
-The command reads Composio's public toolkit page, ranks 200 connectors, matches
-logos from `@thesvg/icons`, and rewrites `src/tool-catalog.ts`. Set
-`PARSE_API_KEY` to use the Parse source instead, or set `TOOLKIT_HTML_FILE` to
-parse a saved toolkit page.
-
-Because sync replaces the entire catalog file, review its diff carefully.
-Manually registered connectors survive only if they are present in the synced
-source and selected by the generator.
+The catalog includes 1000 connectors, each with an available logo.
 
 ## Repository map
 
 - `src/tool-card.tsx` — connector card rendering
 - `src/types.ts` — public connector types
 - `src/tool-catalog.ts` — named connector exports and catalog registration
-- `scripts/sync-tool-catalog.ts` — generated catalog refresh
 - `examples/basic` — editable Next.js showcase
 - `test` — package and rendering checks

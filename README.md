@@ -34,9 +34,7 @@ required/optional `fields` are optional.
 Every catalog item is also a typed named export, so individual tools can be
 imported directly (`Slack`, `Gmail`, `Notion`, `Exa`, and the rest).
 
-The v0 catalog is limited to 200 useful integrations. It keeps the source
-directory's featured tools first, then ranks the remainder by available
-actions and triggers; it does not depend on a connector vendor at runtime.
+The v0 catalog includes 1000 integrations with available logos.
 
 Available logos use tree-shakeable imports from
 [`@thesvg/icons`](https://www.npmjs.com/package/@thesvg/icons). Importing a
@@ -44,9 +42,9 @@ named tool includes its matched icon; importing `toolCatalog` includes the
 matched icons for the whole catalog. A tool can omit `image` when no suitable
 logo exists.
 
-The cards and their field definitions are backend-agnostic: they do not
-require Composio or any other connector service. Product names and logos are
-trademarks of their respective owners.
+The cards and their field definitions are backend-agnostic and require no
+connector service. Product names and logos are trademarks of their respective
+owners.
 
 ## Add a tool
 

@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run example:build",
+  "outputDirectory": "examples/basic/out",
+  "ignoreCommand": "[ \"$VERCEL_GIT_COMMIT_REF\" != \"main\" ]"
+}
