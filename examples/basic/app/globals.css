@@ -63,6 +63,22 @@ main {
   letter-spacing: -0.02em;
 }
 
+.nav-links {
+  align-items: center;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.nav-links a:not(.github-link) {
+  color: #aab4c0;
+  font-size: 0.9375rem;
+  text-decoration: none;
+}
+
+.nav-links a:not(.github-link):hover {
+  color: #e7ecf2;
+}
+
 .github-link {
   border-radius: 0.5rem;
   display: inline-flex;

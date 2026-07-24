@@ -6,6 +6,8 @@ import { CodeBlock } from "./code-block";
 import { CopyButton } from "./copy-button";
 
 const GITHUB_URL = "https://github.com/omavashia2005/ai-tool-elements";
+const DOCS_URL = "https://mintlify.wiki/omavashia2005/ai-tool-elements/introduction";
+const DEEPWIKI_URL = "https://deepwiki.com/omavashia2005/ai-tool-elements";
 
 const INSTALL_COMMAND = "npm install ai-tool-elements";
 
@@ -62,9 +64,13 @@ export default function Page(): JSX.Element {
     <>
       <header className="topbar">
         <span className="wordmark">ai-tool-elements</span>
-        <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
-          <GithubIcon />
-        </a>
+        <nav className="nav-links">
+          <a href={DOCS_URL}>Docs</a>
+          <a href={DEEPWIKI_URL}>DeepWiki</a>
+          <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
+            <GithubIcon />
+          </a>
+        </nav>
       </header>
 
       <main>
@@ -168,9 +174,13 @@ export default function Page(): JSX.Element {
       <footer className="footer">
         <code>{INSTALL_COMMAND}</code>
         <span>MIT licensed</span>
-        <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
-          <GithubIcon />
-        </a>
+        <nav className="nav-links">
+          <a href={DOCS_URL}>Docs</a>
+          <a href={DEEPWIKI_URL}>DeepWiki</a>
+          <a className="github-link" href={GITHUB_URL} aria-label="GitHub repository">
+            <GithubIcon />
+          </a>
+        </nav>
       </footer>
     </>
   );
