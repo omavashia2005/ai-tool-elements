@@ -32,11 +32,10 @@ npm run example
 ## Catalog changes
 
 See [Register a connector](./SETUP.md#register-a-connector) before editing
-`src/tool-catalog.ts`. The catalog is capped at 200 entries, and
-`npm run sync:catalog` rewrites the whole file.
+`src/tool-catalog.ts`. Catalog entries must include an image.
 
-Catalog-only changes should still pass `npm test`, which checks the catalog
-size, unique IDs, named exports, and SVG content.
+Catalog-only changes should still pass `npm test`, which checks unique IDs,
+named exports, and SVG content.
 
 ## Pull requests
 

@@ -46,8 +46,7 @@
     "prepublishOnly": "npm test",
     "doctor": "npx react-doctor@latest",
     "example": "npm run build && npm run dev --workspace ai-tool-elements-example",
-    "example:build": "npm run build && npm run build --workspace ai-tool-elements-example",
-    "sync:catalog": "node --import tsx scripts/sync-tool-catalog.ts"
+    "example:build": "npm run build && npm run build --workspace ai-tool-elements-example"
   },
   "peerDependencies": {
     "react": ">=18"
@@ -59,13 +58,11 @@
     "@tailwindcss/cli": "^4.3.3",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.2.3",
-    "cheerio": "^1.0.0",
     "react": "^19.1.0",
     "react-doctor": "^0.9.1",
     "react-dom": "^19.2.8",
     "tailwindcss": "^4.3.3",
     "tsup": "^8.5.0",
-    "tsx": "^4.23.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
