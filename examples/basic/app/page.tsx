@@ -28,12 +28,12 @@ export default function Page(): JSX.Element {
 
       <main>
         <section className="hero">
-          <h1>Render your agent&rsquo;s tool calls, from pending to done.</h1>
+          <h1>React components for every tool your agent needs.</h1>
           <p className="lede">
-            <code className="inline-code">ToolCallCard</code> shows every state
-            of a tool call — streaming input, awaiting approval, output,
-            errors — as a branded shadcn/ui card for Stripe, Exa, Gmail,
-            Notion, and 1000+ tools. Provider-independent, typed, no lock-in.
+            <code className="inline-code">ai-tool-elements</code> is a React
+            component library for tool-related UI — render stateful tool calls
+            at runtime, or build static tool cards, catalogs, and integration
+            surfaces for providers like Composio, Apify, Scalekit, and more.
           </p>
           <div className="install" aria-label="Install command">
             <code>{INSTALL_COMMAND}</code>
